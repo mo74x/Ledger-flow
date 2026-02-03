@@ -1,0 +1,52 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  // In a real app, we would have API Keys here
+  accounts  Account[]
+  createdAt DateTime @default(now())
+}
+
+// The "Buckets" where money lives
+model Account {
+  id             String      @id @default(uuid())
+  name           String      
+  type           String      
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  entries        JournalEntry[]
+  
+  // Optimization: Cached balance in CENTS
+  currentBalance Int         @default(0) 
+}
+
+// The Event (e.g., "Paying Rent")
+model Transaction {
+  id          String   @id @default(uuid())
+  description String
+  date        DateTime @default(now())
+  
+  // A transaction relates to journal entries
+  entries     JournalEntry[]
+}
+
+// The Movement (The Debit or Credit line item)
+model JournalEntry {
+  id            String      @id @default(uuid())
+  amount        Int         // Positive = Debit, Negative = Credit
+  
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  
+  accountId     String
+  account       Account     @relation(fields: [accountId], references: [id])
+}
