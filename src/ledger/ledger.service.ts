@@ -51,4 +51,9 @@ export class LedgerService {
       return transaction;
     });
   }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getAllAccounts() {
+    return this.prisma.account.findMany();
+  }
 }
